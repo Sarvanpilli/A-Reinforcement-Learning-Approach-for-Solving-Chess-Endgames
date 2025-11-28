@@ -45,6 +45,9 @@ class QLearning:
             # if not possible_states or current_state_id in visited_pos:
             if not possible_states:
                 epochs -= 1
+                
+                if epochs % 10000 == 0:
+                    print(f"Epochs remaining: {epochs}")
 
                 # Select new initial state for episode
                 current_state_id = random.choice(self.all_params)

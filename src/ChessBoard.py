@@ -1,7 +1,7 @@
 import sys
-from src.Pieces import King, Rook, Piece
+from Pieces import King, Rook, Piece
 import random
-import copy
+import random
 
 
 class ChessBoard:
@@ -37,6 +37,15 @@ class ChessBoard:
 
             # if self.state == ChessBoard.BLACK_KING_CHECKED:
             #    self.valid = False
+
+    def clone(self):
+        new_board = ChessBoard(debug=self.debug)
+        new_board.pieces = [p.clone() for p in self.pieces]
+        new_board.round = self.round
+        new_board.turn = self.turn
+        new_board.state = self.state
+        new_board.valid = self.valid
+        return new_board
 
     def board_id(self):
         b_king = self.get_b_king()
@@ -162,7 +171,7 @@ class ChessBoard:
 
 
             for row, col in moves:
-                new_board = copy.deepcopy(self)
+                new_board = self.clone()
                 clone_piece = None
                 if piece_num is 0:
                     clone_piece = new_board.get_w_king()

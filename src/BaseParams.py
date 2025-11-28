@@ -1,7 +1,30 @@
-from Cheesboard import ChessBoard
+from ChessBoard import ChessBoard
 from CheesboardKB import ChessBoardKB
 from Pieces import *
 import pickle
+import concurrent.futures
+
+def process_chunk(chunk):
+    nxt_prms = {}
+    for wk_r, wk_c, wr_r, wr_c, bk_r, bk_c, white_plays in chunk:
+        board = ChessBoard(wk=King(wk_r, wk_c, Piece.WHITE),
+                           wr=Rook(wr_r, wr_c, Piece.WHITE),
+                           bk=King(bk_r, bk_c, Piece.BLACK),
+                           white_plays=white_plays)
+        if not board.valid:
+            continue
+
+        nxt_pos = {}
+        for nxt_moves in board.get_possible_moves():
+            r = -1
+            if nxt_moves.state == ChessBoard.BLACK_KING_CHECKMATE:
+                r = 1
+            elif nxt_moves.state == ChessBoard.DRAW:
+                r = 0
+            nxt_pos[nxt_moves.board_id()] = r
+
+        nxt_prms[(wk_r,wk_c,wr_r,wr_c,bk_r,bk_c,white_plays)] = nxt_pos
+    return nxt_prms
 
 
 class BaseParams:
@@ -44,31 +67,19 @@ class BoardPossitionParams(BaseParams):
         if params is None:
             params = self.get_all_params()
 
-        count = 0
+        print(f"Generating states for {len(params)} positions...")
+        
+        # Determine chunk size (aim for ~100 chunks or based on CPU count)
+        chunk_size = max(1, len(params) // 16) 
+        chunks = [params[i:i + chunk_size] for i in range(0, len(params), chunk_size)]
+
         nxt_prms = {}
-        for wk_r, wk_c, wr_r, wr_c, bk_r, bk_c,white_plays in params:
-
-            board = ChessBoard(wk=King(wk_r, wk_c, Piece.WHITE),
-                               wr=Rook(wr_r, wr_c, Piece.WHITE),
-                               bk=King(bk_r, bk_c, Piece.BLACK),
-                               white_plays=white_plays)
-            if not board.valid:
-                continue
-
-            nxt_pos = {}
-            for nxt_moves in board.get_possible_moves():
-                r = -1
-                if nxt_moves.state == ChessBoard.BLACK_KING_CHECKMATE:
-                    r = 1
-                elif nxt_moves.state == ChessBoard.DRAW:
-                    r = 0
-                nxt_pos[nxt_moves.board_id()] = r
-
-            nxt_prms[(wk_r,wk_c,wr_r,wr_c,bk_r,bk_c,white_plays)] = nxt_pos
-
-            count += 1
-            if count % 1000 == 0:
-                print (count)
+        with concurrent.futures.ProcessPoolExecutor() as executor:
+            results = executor.map(process_chunk, chunks)
+            for i, res in enumerate(results):
+                nxt_prms.update(res)
+                if i % 10 == 0:
+                    print(f"Processed chunk {i}/{len(chunks)}")
 
         return nxt_prms
 

@@ -2,7 +2,7 @@ import os.path
 from BaseParams import BoardPossitionParams
 import pickle
 import random
-from Cheesboard import ChessBoard, King, Rook, Piece
+from ChessBoard import ChessBoard, King, Rook, Piece
 
 
 class Play:
@@ -20,7 +20,7 @@ class Play:
                 wins += 1
                 turns += turn
 
-        if wins is 0:
+        if wins == 0:
             return 0, 0
         return (wins / games_to_play), (turns / wins)
 
@@ -38,7 +38,7 @@ class Play:
 
             board = get_board(current_state_id)
 
-            if current_state_id[6] is 1:
+            if current_state_id[6] == 1:
                 turn += 1
 
             if turn == 41:
@@ -58,7 +58,7 @@ class Play:
                 break
 
             max_state_id = None
-            if current_state_id[6] is 0:  # If it`s black turn select move with minimal q
+            if current_state_id[6] == 0:  # If it`s black turn select move with minimal q
                 max_state_id = self.get_min_state(next_states)
                 # max_state_id = random.choice(list(next_states.keys()))  # Black can play randomly
             else:  # If it`s black turn select move with maximum q
@@ -119,7 +119,7 @@ def get_board(state_id):
 
 
 if __name__ == '__main__':
-    p = Play('res/memory1-0_trained_1000000_9.bson', True)
+    p = Play('res/memory1-0_Q_trained_ep1000000_g99_l8_e90.bson', True)
     #wins, turns = p.play_stats(1)
     wins, turns = p.play((7,1,6,6,4,5,0))
     print(wins, turns)

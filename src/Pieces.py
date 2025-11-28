@@ -36,6 +36,9 @@ class Piece():
     def to_json(self):
         return { 'row' : self.row , 'col' : self.col }
 
+    def clone(self):
+        return self.__class__(self.row, self.col, self.color)
+
     def move(self, d_row, d_col):
         """
         Move the piece to the desired coordinates
