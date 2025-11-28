@@ -70,10 +70,10 @@ class Game(cocos.layer.Layer):
         self.draw_attention()
 
     def update_sprites(self):
-        # Remove old sprites
-        if self.wk_sprite: self.remove(self.wk_sprite)
-        if self.wr_sprite: self.remove(self.wr_sprite)
-        if self.bk_sprite: self.remove(self.bk_sprite)
+        # Remove old sprites safely
+        if self.wk_sprite and self.wk_sprite in self.children: self.remove(self.wk_sprite)
+        if self.wr_sprite and self.wr_sprite in self.children: self.remove(self.wr_sprite)
+        if self.bk_sprite and self.bk_sprite in self.children: self.remove(self.bk_sprite)
         
         # Load images (now local)
         asset_dir = os.path.dirname(os.path.abspath(__file__))
